@@ -1,0 +1,17 @@
+# .NET / C# Derleme Çıktıları 
+bin/
+obj/
+**/bin/
+**/obj/
+*.dll
+*.exe
+*.pdb
+*.user
+*.suo
+
+# IDE ve Sistem Dosyaları
+.vs/
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
