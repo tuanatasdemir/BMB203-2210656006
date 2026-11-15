@@ -1,13 +1,18 @@
+using OtelRezervasyon.Common;
+
 namespace OtelRezervasyon.Models;
 
 /// <summary>
-/// Oteldeki tüm oda türleri için ortak alanları ve doğrulamaları barındıran soyut taban sınıf.
+/// Oteldeki tüm oda türleri için ortak alanları, doğrulamaları ve soyut ücret hesaplama sözleşmesini barındıran taban sınıf.
 /// </summary>
 public abstract class Oda
 {
     private readonly Guid _id;
     private int _odaNo;
     private int _kat;
+
+    // Kişiye özel sabit parametre: Birim Fiyat = 50 TL
+    public const decimal BirimFiyat = 50m;
 
     protected Oda(int odaNo, int kat)
     {
@@ -53,5 +58,26 @@ public abstract class Oda
             }
             _kat = value;
         }
+    }
+
+    /// <summary>
+    /// Alt oda türünün fiyat çarpan katsayısı.
+    /// </summary>
+    public abstract decimal TurKatsayisi { get; }
+
+    /// <summary>
+    /// Odada konaklayabilecek maksimum kişi kapasitesi.
+    /// </summary>
+    public abstract int MaksimumKapasite { get; }
+
+    /// <summary>
+    /// Temel formül: birim fiyat (50 TL) x gece x tür katsayısı.
+    /// Alt sınıflarda kurallara göre override edilir.
+    /// </summary>
+    public abstract Para Hesapla(int gece);
+
+    public override string ToString()
+    {
+        return $"[Id: {Id.ToString()[..8]} | Oda No: {OdaNo} | Kat: {Kat} | Tür: {GetType().Name}]";
     }
 }
