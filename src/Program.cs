@@ -1,31 +1,19 @@
 ﻿using OtelRezervasyon.Common;
 using OtelRezervasyon.Exceptions;
+using OtelRezervasyon.Models;
 using OtelRezervasyon.Strategies;
 
 Console.OutputEncoding = System.Text.Encoding.UTF8;
 
-Console.WriteLine("--- 2. Gün: Özel İstisnalar ve Strateji Testi ---");
+Console.WriteLine("--- 3. Gün: ArtanCeza Stratejisi ve Oda Taban Sınıf Sabitleri Testi ---");
+Console.WriteLine($"Oda Sabit Birim Fiyatı: {Oda.BirimFiyat} TL\n");
 
-ICezaPolitikasi cezaYok = new CezaYok();
 ICezaPolitikasi sabitCeza = new GunlukSabitCeza();
+ICezaPolitikasi artanCeza = new ArtanCeza();
 
-Console.WriteLine($"{cezaYok.PolitikaAdi} (3 gün gecikme): {cezaYok.Ceza(3)}");
-Console.WriteLine($"{sabitCeza.PolitikaAdi} (3 gün gecikme): {sabitCeza.Ceza(3)}");
+int[] testGecikmeler = { 0, 4, 6, 8 };
 
-try
+foreach (int gun in testGecikmeler)
 {
-    throw new OdaDoluException(101, new DateTime(2026, 11, 15), new DateTime(2026, 11, 18));
-}
-catch (OdaDoluException ex)
-{
-    Console.WriteLine($"Yakalanan İstisna 1: {ex.Message} (Oda No: {ex.OdaNo})");
-}
-
-try
-{
-    throw new GecersizTarihException(new DateTime(2026, 11, 20), new DateTime(2026, 11, 18));
-}
-catch (GecersizTarihException ex)
-{
-    Console.WriteLine($"Yakalanan İstisna 2: {ex.Message}");
+    Console.WriteLine($"Gecikme: {gun} birim -> Sabit Ceza: {sabitCeza.Ceza(gun),-12} | Artan Ceza: {artanCeza.Ceza(gun)}");
 }
