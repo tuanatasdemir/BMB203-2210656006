@@ -1,3 +1,4 @@
+using OtelRezervasyon.Common;
 using OtelRezervasyon.Exceptions;
 
 namespace OtelRezervasyon.Models;
@@ -64,4 +65,47 @@ public class Rezervasyon
     public DateTime CikisTarihi => _cikisTarihi;
     public int KisiSayisi => _kisiSayisi;
     public bool AktifMi => _aktifMi;
+
+    /// <summary>
+    /// Giriş ve çıkış tarihleri arasındaki toplam gece sayısı.
+    /// </summary>
+    public int ToplamGece => (_cikisTarihi - _girisTarihi).Days;
+
+    /// <summary>
+    /// İlgili odanın polimorfik Hesapla() metodunu kullanarak toplam konaklama ücretini döndürür.
+    /// </summary>
+    public Para KonaklamaUcretiHesapla() => _rezerveOda.Hesapla(ToplamGece);
+
+    /// <summary>
+    /// Verilen tarih aralığının bu rezervasyon ile çakışıp çakışmadığını denetler.
+    /// Kapalı (çıkışı yapılmış) rezervasyonlar çakışma yaratmaz.
+    /// </summary>
+    public bool TarihCakisiyorMu(DateTime yeniGiris, DateTime yeniCikis)
+    {
+        if (!_aktifMi)
+        {
+            return false;
+        }
+
+        return _girisTarihi < yeniCikis.Date && yeniGiris.Date < _cikisTarihi;
+    }
+
+    /// <summary>
+    /// Müşteri otelden ayrıldığında rezervasyon kaydını kapatır.
+    /// </summary>
+    public void CikisKapat()
+    {
+        if (!_aktifMi)
+        {
+            throw new InvalidOperationException($"#{_id.ToString()[..8]} kodlu rezervasyonun çıkışı zaten yapılmıştır.");
+        }
+        _aktifMi = false;
+    }
+
+    public override string ToString()
+    {
+        string durum = _aktifMi ? "Aktif" : "Kapandı (Çıkış Yapıldı)";
+        return $"[Rez #{_id.ToString()[..8]} | Müşteri: {_musteriAdi} | Kişi: {_kisiSayisi} | " +
+               $"{_girisTarihi:yyyy-MM-dd} -> {_cikisTarihi:yyyy-MM-dd} ({ToplamGece} Gece) | Durum: {durum}] -> {_rezerveOda}";
+    }
 }
