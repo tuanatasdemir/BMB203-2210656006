@@ -1,33 +1,42 @@
 ﻿using OtelRezervasyon.Common;
 using OtelRezervasyon.Exceptions;
 using OtelRezervasyon.Models;
-using OtelRezervasyon.Strategies;
 
 Console.OutputEncoding = System.Text.Encoding.UTF8;
 
-Console.WriteLine("--- 4. Gün: StandartOda ve SuitOda Modelleri Testi ---\n");
+Console.WriteLine("--- 5. Gün: AileOdasi Polimorfizm ve Rezervasyon Değişmezleri Testi ---\n");
 
-// 1. Test: StandartOda (Yatak sayısı 3 -> %25 ek ücret tetiklenmeli)
-Oda standartOdaNormal = new StandartOda(101, 1, 2); // Normal yatak (2)
-Oda standartOdaEkli = new StandartOda(102, 1, 3);   // Ekli yatak (>2)
+// 1. Polimorfik Oda Koleksiyonu Testi
+List<Oda> odalar = new()
+{
+    new StandartOda(101, 1, 2),
+    new SuitOda(201, 2, 40.0),
+    new AileOdasi(301, 3, 2) // 2 yetişkin + 2 çocuk yatağı = 4 kişi kapasiteli
+};
 
-int testGece = 4;
-Console.WriteLine($"Oda 1 (2 Yatak, {testGece} Gece): {standartOdaNormal.Hesapla(testGece)}"); // 50 * 4 * 2.0 = 400 TL
-Console.WriteLine($"Oda 2 (3 Yatak, {testGece} Gece): {standartOdaEkli.Hesapla(testGece)}");     // (50 * 4 * 2.0) * 1.25 = 500 TL
+foreach (Oda oda in odalar)
+{
+    Console.WriteLine($"{oda} -> 3 Gece Ücreti: {oda.Hesapla(3)}");
+}
 
-// 2. Test: SuitOda
-Oda suitOda = new SuitOda(201, 2, 45.0);
-Console.WriteLine($"Suit Oda (45 m², {testGece} Gece): {suitOda.Hesapla(testGece)}");       // 50 * 4 * 1.75 = 350 TL
+// 2. Geçerli Rezervasyon ve Tarih Çakışması Kontrolü
+Console.WriteLine("\n--- Rezervasyon ve Tarih Çakışması Testi ---");
+var aileOdasi = odalar[2];
+var rez1 = new Rezervasyon(aileOdasi, "Zeynep Şahin", new DateTime(2026, 12, 10), new DateTime(2026, 12, 15), 4);
+Console.WriteLine(rez1);
+Console.WriteLine($"Hesaplanan Ücret: {rez1.KonaklamaUcretiHesapla()}");
+Console.WriteLine($"12-14 Aralık ile çakışıyor mu?: {rez1.TarihCakisiyorMu(new DateTime(2026, 12, 12), new DateTime(2026, 12, 14))}");
+Console.WriteLine($"15-18 Aralık ile çakışıyor mu?: {rez1.TarihCakisiyorMu(new DateTime(2026, 12, 15), new DateTime(2026, 12, 18))}");
 
-// 3. Test: Geçersiz yatak sayısı denemesi (Hata yönetimi)
+// 3. Kişi Sayısı Kapasite Aşımı Testi (OdaDoluException)
 try
 {
-    Console.WriteLine("\nDeneniyor: 5 yataklı standart oda oluşturma...");
-    Oda hataliOda = new StandartOda(103, 1, 5);
+    Console.WriteLine("\nDeneniyor: 4 kişilik Aile Odasına 6 kişilik rezervasyon açma...");
+    var hataliRez = new Rezervasyon(aileOdasi, "Kalabalık Aile", new DateTime(2026, 12, 20), new DateTime(2026, 12, 22), 6);
 }
-catch (ArgumentOutOfRangeException ex)
+catch (OdaDoluException ex)
 {
     Console.ForegroundColor = ConsoleColor.Yellow;
-    Console.WriteLine($"[YAKALANAN İSTİSNA]: {ex.ParamName} -> {ex.Message}");
+    Console.WriteLine($"[YAKALANAN İSTİSNA]: {ex.Message}");
     Console.ResetColor();
 }
