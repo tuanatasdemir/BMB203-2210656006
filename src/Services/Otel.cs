@@ -39,4 +39,32 @@ public class Otel
     {
         _cezaPolitikasi = yeniPolitika ?? throw new ArgumentNullException(nameof(yeniPolitika), "Yeni ceza politikası boş olamaz.");
     }
+
+    // Ek Görev 2: İç listelerin kopyası değil, doğrudan salt-okunur (ReadOnly) sarmalayıcı görünümü
+    public IReadOnlyList<Oda> Odalar => _odalar.AsReadOnly();
+    public IReadOnlyList<Rezervasyon> Rezervasyonlar => _rezervasyonlar.AsReadOnly();
+
+    // Ek Görev 2: Kayıtlara sıra numarasıyla erişim sağlayan Indexer ve sınır doğrulaması
+    public Oda this[int index]
+    {
+        get
+        {
+            if (index < 0 || index >= _odalar.Count)
+            {
+                throw new IndexOutOfRangeException(
+                    $"[Geçersiz Sıra Numarası] İstenen indeks ({index}) geçersizdir. Mevcut kayıtlı oda sayısı: {_odalar.Count}.");
+            }
+            return _odalar[index];
+        }
+    }
+
+    public Rezervasyon RezervasyonGetir(int index)
+    {
+        if (index < 0 || index >= _rezervasyonlar.Count)
+        {
+            throw new IndexOutOfRangeException(
+                $"[Geçersiz Sıra Numarası] İstenen rezervasyon indeksi ({index}) geçersizdir. Mevcut rezervasyon sayısı: {_rezervasyonlar.Count}.");
+        }
+        return _rezervasyonlar[index];
+    }
 }
