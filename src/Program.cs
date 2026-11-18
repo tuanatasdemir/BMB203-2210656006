@@ -1,38 +1,33 @@
 ﻿using OtelRezervasyon.Common;
 using OtelRezervasyon.Exceptions;
 using OtelRezervasyon.Models;
+using OtelRezervasyon.Services;
+using OtelRezervasyon.Strategies;
 
 Console.OutputEncoding = System.Text.Encoding.UTF8;
 
-Console.WriteLine("--- 5. Gün: AileOdasi Polimorfizm ve Rezervasyon Değişmezleri Testi ---\n");
+Console.WriteLine("--- 6. Gün: Otel Servisi, DI, Indexer ve Rezervasyon Akışı Testi ---\n");
 
-// 1. Polimorfik Oda Koleksiyonu Testi
-List<Oda> odalar = new()
-{
-    new StandartOda(101, 1, 2),
-    new SuitOda(201, 2, 40.0),
-    new AileOdasi(301, 3, 2) // 2 yetişkin + 2 çocuk yatağı = 4 kişi kapasiteli
-};
+// 1. DI ile Otel oluşturma (Kapasite: 45, Strateji: GunlukSabitCeza)
+var otel = new Otel(45, new GunlukSabitCeza());
+Console.WriteLine($"Otel oluşturuldu. Kapasite: {otel.Kapasite}, Strateji: {otel.AktifCezaPolitikasi.PolitikaAdi}");
 
-foreach (Oda oda in odalar)
-{
-    Console.WriteLine($"{oda} -> 3 Gece Ücreti: {oda.Hesapla(3)}");
-}
+// 2. RezervasyonYap testi
+var oda101 = new StandartOda(101, 1, 2);
+var oda201 = new SuitOda(201, 2, 35.0);
 
-// 2. Geçerli Rezervasyon ve Tarih Çakışması Kontrolü
-Console.WriteLine("\n--- Rezervasyon ve Tarih Çakışması Testi ---");
-var aileOdasi = odalar[2];
-var rez1 = new Rezervasyon(aileOdasi, "Zeynep Şahin", new DateTime(2026, 12, 10), new DateTime(2026, 12, 15), 4);
-Console.WriteLine(rez1);
-Console.WriteLine($"Hesaplanan Ücret: {rez1.KonaklamaUcretiHesapla()}");
-Console.WriteLine($"12-14 Aralık ile çakışıyor mu?: {rez1.TarihCakisiyorMu(new DateTime(2026, 12, 12), new DateTime(2026, 12, 14))}");
-Console.WriteLine($"15-18 Aralık ile çakışıyor mu?: {rez1.TarihCakisiyorMu(new DateTime(2026, 12, 15), new DateTime(2026, 12, 18))}");
+var rez1 = otel.RezervasyonYap(oda101, "Ahmet Yılmaz", new DateTime(2026, 11, 18), new DateTime(2026, 11, 21), 2);
+var rez2 = otel.RezervasyonYap(oda201, "Ayşe Kaya", new DateTime(2026, 11, 20), new DateTime(2026, 11, 23), 2);
 
-// 3. Kişi Sayısı Kapasite Aşımı Testi (OdaDoluException)
+// 3. Indexer erişim testi
+Console.WriteLine($"\nIndexer Testi -> otel[0]: {otel[0]}");
+Console.WriteLine($"Indexer Testi -> otel[1]: {otel[1]}");
+
+// 4. Tarih çakışması testi (Oda 101 için çakışan tarih)
 try
 {
-    Console.WriteLine("\nDeneniyor: 4 kişilik Aile Odasına 6 kişilik rezervasyon açma...");
-    var hataliRez = new Rezervasyon(aileOdasi, "Kalabalık Aile", new DateTime(2026, 12, 20), new DateTime(2026, 12, 22), 6);
+    Console.WriteLine("\nDeneniyor: Oda 101 için çakışan tarih (19-22 Kasım) rezervasyonu...");
+    otel.RezervasyonYap(oda101, "Mehmet Demir", new DateTime(2026, 11, 19), new DateTime(2026, 11, 22), 1);
 }
 catch (OdaDoluException ex)
 {
@@ -40,3 +35,11 @@ catch (OdaDoluException ex)
     Console.WriteLine($"[YAKALANAN İSTİSNA]: {ex.Message}");
     Console.ResetColor();
 }
+
+// 5. Strateji değiştirme ve CikisYap testi
+otel.CezaPolitikasiDegistir(new ArtanCeza());
+Console.WriteLine($"\nYeni Strateji: {otel.AktifCezaPolitikasi.PolitikaAdi}");
+
+Para odenecekTutar = otel.CikisYap(rez1.Id, gecikmeBirimi: 2);
+Console.WriteLine($"Rezervasyon 1 Çıkış Yapıldı (2 birim gecikmeli toplam): {odenecekTutar}");
+Console.WriteLine($"Otel Toplam Konaklama Geliri: {otel.ToplamKonaklamaUcretiHesapla()}");
