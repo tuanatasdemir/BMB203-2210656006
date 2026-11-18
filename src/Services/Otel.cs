@@ -1,3 +1,5 @@
+using OtelRezervasyon.Common;
+using OtelRezervasyon.Exceptions;
 using OtelRezervasyon.Models;
 using OtelRezervasyon.Strategies;
 
@@ -66,5 +68,94 @@ public class Otel
                 $"[Geçersiz Sıra Numarası] İstenen rezervasyon indeksi ({index}) geçersizdir. Mevcut rezervasyon sayısı: {_rezervasyonlar.Count}.");
         }
         return _rezervasyonlar[index];
+    }
+
+    /// <summary>
+    /// Otele yeni bir oda kaydeder. Otel kapasitesi (45) aşılırsa istisna fırlatır.
+    /// </summary>
+    public void OdaKaydet(Oda oda)
+    {
+        if (oda == null)
+        {
+            throw new ArgumentNullException(nameof(oda), "Eklenecek oda nesnesi boş olamaz.");
+        }
+
+        if (_odalar.Any(o => o.OdaNo == oda.OdaNo))
+        {
+            return; // Oda zaten kayıtlıysa tekrar ekleme
+        }
+
+        // Sınıf Değişmezi: Otelin toplam oda sayısı 45 (_kapasite) değerini aşamaz
+        if (_odalar.Count >= _kapasite)
+        {
+            throw new OdaDoluException(oda.OdaNo, $"Otelin maksimum oda kapasitesi ({_kapasite}) dolmuştur, yeni oda eklenemez.");
+        }
+
+        _odalar.Add(oda);
+    }
+
+    /// <summary>
+    /// Belirtilen oda ve tarih aralığı için çakışma ve kapasite kontrollerini yaparak rezervasyon oluşturur.
+    /// </summary>
+    public Rezervasyon RezervasyonYap(Oda oda, string musteriAdi, DateTime girisTarihi, DateTime cikisTarihi, int kisiSayisi)
+    {
+        if (oda == null)
+        {
+            throw new ArgumentNullException(nameof(oda));
+        }
+
+        // Oda henüz otel envanterinde yoksa kapasite kontrolüyle kaydet
+        if (!_odalar.Any(o => o.OdaNo == oda.OdaNo))
+        {
+            OdaKaydet(oda);
+        }
+
+        // Sınıf Değişmezi: Aynı oda için tarihleri çakışan iki rezervasyon olamaz
+        bool tarihCakisiyor = _rezervasyonlar.Any(r =>
+            r.RezerveOda.OdaNo == oda.OdaNo &&
+            r.TarihCakisiyorMu(girisTarihi, cikisTarihi));
+
+        if (tarihCakisiyor)
+        {
+            throw new OdaDoluException(oda.OdaNo, girisTarihi, cikisTarihi);
+        }
+
+        // Rezervasyon constructor'ı tarih sırasını (GecersizTarihException) ve kişi kapasitesini (OdaDoluException) doğrular
+        var yeniRezervasyon = new Rezervasyon(oda, musteriAdi, girisTarihi, cikisTarihi, kisiSayisi);
+        _rezervasyonlar.Add(yeniRezervasyon);
+
+        return yeniRezervasyon;
+    }
+
+    /// <summary>
+    /// Rezervasyon kaydını kapatır, konaklama ücretini ve varsa gecikme cezasını hesaplayarak döndürür.
+    /// </summary>
+    public Para CikisYap(Guid rezervasyonId, int gecikmeBirimi = 0)
+    {
+        var rezervasyon = _rezervasyonlar.FirstOrDefault(r => r.Id == rezervasyonId);
+        if (rezervasyon == null)
+        {
+            throw new KeyNotFoundException($"[Hata] #{rezervasyonId} kimlikli rezervasyon kaydı bulunamadı.");
+        }
+
+        rezervasyon.CikisKapat();
+
+        Para konaklamaUcreti = rezervasyon.KonaklamaUcretiHesapla();
+        Para gecikmeCezasi = _cezaPolitikasi.Ceza(gecikmeBirimi);
+
+        return konaklamaUcreti + gecikmeCezasi;
+    }
+
+    /// <summary>
+    /// Tüm rezervasyonların toplam konaklama ücretini Para değer nesnesi olarak hesaplar.
+    /// </summary>
+    public Para ToplamKonaklamaUcretiHesapla()
+    {
+        Para toplam = Para.Sifir("TL");
+        foreach (var rez in _rezervasyonlar)
+        {
+            toplam += rez.KonaklamaUcretiHesapla();
+        }
+        return toplam;
     }
 }
