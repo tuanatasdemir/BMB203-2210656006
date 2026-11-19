@@ -6,40 +6,41 @@ using OtelRezervasyon.Strategies;
 
 Console.OutputEncoding = System.Text.Encoding.UTF8;
 
-Console.WriteLine("--- 6. Gün: Otel Servisi, DI, Indexer ve Rezervasyon Akışı Testi ---\n");
+Console.WriteLine("================================================================================");
+Console.WriteLine("  BMB203 NESNEYE YÖNELİK PROGRAMLAMA DÖNEM ÖDEVİ");
+Console.WriteLine("  Ödev Kodu: NYP-OTL-656006 | Öğrenci: 2210656006 - Nimet Tuana Taşdemir");
+Console.WriteLine("  Alan: Otel Rezervasyon Simülasyonu");
+Console.WriteLine("================================================================================\n");
 
-// 1. DI ile Otel oluşturma (Kapasite: 45, Strateji: GunlukSabitCeza)
-var otel = new Otel(45, new GunlukSabitCeza());
-Console.WriteLine($"Otel oluşturuldu. Kapasite: {otel.Kapasite}, Strateji: {otel.AktifCezaPolitikasi.PolitikaAdi}");
+// --------------------------------------------------------------------------------
+// ADIM 1: Otel nesnesini kapasite 45 ile ve GunlukSabitCeza stratejisiyle oluşturun.
+// --------------------------------------------------------------------------------
+Console.WriteLine(">>> [ADIM 1] Otel Nesnesi Başlatılıyor (Kapasite: 45, Strateji: GunlukSabitCeza)...");
+ICezaPolitikasi baslangicStratejisi = new GunlukSabitCeza();
+var otel = new Otel(kapasite: 45, cezaPolitikasi: baslangicStratejisi);
+Console.WriteLine($"Otel oluşturuldu. Kapasite: {otel.Kapasite} | Aktif Strateji: {otel.AktifCezaPolitikasi.PolitikaAdi}\n");
 
-// 2. RezervasyonYap testi
-var oda101 = new StandartOda(101, 1, 2);
-var oda201 = new SuitOda(201, 2, 35.0);
+// --------------------------------------------------------------------------------
+// ADIM 2: Her türden en az iki olmak üzere toplam 6 Oda kaydı ekleyin (RezervasyonYap).
+// --------------------------------------------------------------------------------
+Console.WriteLine(">>> [ADIM 2] Her Türden 2 Olmak Üzere Toplam 6 Oda Rezervasyonu Ekleniyor...");
 
-var rez1 = otel.RezervasyonYap(oda101, "Ahmet Yılmaz", new DateTime(2026, 11, 18), new DateTime(2026, 11, 21), 2);
-var rez2 = otel.RezervasyonYap(oda201, "Ayşe Kaya", new DateTime(2026, 11, 20), new DateTime(2026, 11, 23), 2);
+var oda1 = new StandartOda(odaNo: 101, kat: 1, yatakSayisi: 2);
+var oda2 = new StandartOda(odaNo: 102, kat: 1, yatakSayisi: 3); // YatakSayisi = 3 (%25 ek ücret)
+var oda3 = new SuitOda(odaNo: 201, kat: 2, salonM2: 35.0);
+var oda4 = new SuitOda(odaNo: 202, kat: 2, salonM2: 50.0);
+var oda5 = new AileOdasi(odaNo: 301, kat: 3, cocukYatagi: 1);
+var oda6 = new AileOdasi(odaNo: 302, kat: 3, cocukYatagi: 2);
 
-// 3. Indexer erişim testi
-Console.WriteLine($"\nIndexer Testi -> otel[0]: {otel[0]}");
-Console.WriteLine($"Indexer Testi -> otel[1]: {otel[1]}");
+var rez1 = otel.RezervasyonYap(oda1, "Ahmet Yılmaz", new DateTime(2026, 11, 15), new DateTime(2026, 11, 18), 2);
+var rez2 = otel.RezervasyonYap(oda2, "Mehmet Demir", new DateTime(2026, 11, 20), new DateTime(2026, 11, 27), 3);
+var rez3 = otel.RezervasyonYap(oda3, "Ayşe Kaya", new DateTime(2026, 12, 01), new DateTime(2026, 12, 04), 2);
+var rez4 = otel.RezervasyonYap(oda4, "Fatma Çelik", new DateTime(2026, 12, 05), new DateTime(2026, 12, 10), 3);
+var rez5 = otel.RezervasyonYap(oda5, "Ali Öztürk", new DateTime(2026, 12, 12), new DateTime(2026, 12, 15), 3);
+var rez6 = otel.RezervasyonYap(oda6, "Zeynep Şahin", new DateTime(2026, 12, 18), new DateTime(2026, 12, 22), 4);
 
-// 4. Tarih çakışması testi (Oda 101 için çakışan tarih)
-try
+foreach (var rez in otel.Rezervasyonlar)
 {
-    Console.WriteLine("\nDeneniyor: Oda 101 için çakışan tarih (19-22 Kasım) rezervasyonu...");
-    otel.RezervasyonYap(oda101, "Mehmet Demir", new DateTime(2026, 11, 19), new DateTime(2026, 11, 22), 1);
+    Console.WriteLine($"  + {rez}");
 }
-catch (OdaDoluException ex)
-{
-    Console.ForegroundColor = ConsoleColor.Yellow;
-    Console.WriteLine($"[YAKALANAN İSTİSNA]: {ex.Message}");
-    Console.ResetColor();
-}
-
-// 5. Strateji değiştirme ve CikisYap testi
-otel.CezaPolitikasiDegistir(new ArtanCeza());
-Console.WriteLine($"\nYeni Strateji: {otel.AktifCezaPolitikasi.PolitikaAdi}");
-
-Para odenecekTutar = otel.CikisYap(rez1.Id, gecikmeBirimi: 2);
-Console.WriteLine($"Rezervasyon 1 Çıkış Yapıldı (2 birim gecikmeli toplam): {odenecekTutar}");
-Console.WriteLine($"Otel Toplam Konaklama Geliri: {otel.ToplamKonaklamaUcretiHesapla()}");
+Console.WriteLine($"Toplam Eklenen Oda: {otel.Odalar.Count} | Toplam Rezervasyon: {otel.Rezervasyonlar.Count}\n");
