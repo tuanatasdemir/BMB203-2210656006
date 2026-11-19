@@ -44,3 +44,65 @@ foreach (var rez in otel.Rezervasyonlar)
     Console.WriteLine($"  + {rez}");
 }
 Console.WriteLine($"Toplam Eklenen Oda: {otel.Odalar.Count} | Toplam Rezervasyon: {otel.Rezervasyonlar.Count}\n");
+
+// --------------------------------------------------------------------------------
+// ADIM 3: StandartOda (YatakSayisi = 3) için 7 gece hesabı ve %25 ek ücret gösterimi.
+// --------------------------------------------------------------------------------
+Console.WriteLine(">>> [ADIM 3] StandartOda (YatakSayisi = 3) 7 Gece Hesaplama ve %25 Ek Ücret Kontrolü...");
+int hesapGece = 7;
+Para standartOdaUcreti = oda2.Hesapla(hesapGece);
+
+decimal tabanTutar = Oda.BirimFiyat * hesapGece * oda2.TurKatsayisi; // 50 * 7 * 2.00 = 700 TL
+decimal ekUcret = tabanTutar * 0.25m;                                // 700 * 0.25 = 175 TL
+
+Console.WriteLine($"  İncelenen Kayıt : {oda2}");
+Console.WriteLine($"  Temel Formül    : {Oda.BirimFiyat:N2} TL x {hesapGece} Gece x {oda2.TurKatsayisi:0.00} = {tabanTutar:N2} TL");
+Console.WriteLine($"  Ek Ücret Kuralı : YatakSayisi ({oda2.YatakSayisi}) > 2 olduğu için +%25 ek uygulandı (+{ekUcret:N2} TL)");
+Console.WriteLine($"  Nihai Ücret     : {standartOdaUcreti}\n");
+
+// --------------------------------------------------------------------------------
+// ADIM 4: Kural ihlali denemesi - Aynı oda için tarihleri çakışan iki rezervasyon olamaz.
+// --------------------------------------------------------------------------------
+Console.WriteLine(">>> [ADIM 4] Kural İhlali Denemesi: Aynı Odaya Çakışan Tarihte Rezervasyon...");
+try
+{
+    Console.WriteLine("  Deneniyor: Oda 101 (mevcut: 2026-11-15 / 2026-11-18) için 2026-11-16 / 2026-11-19 rezervasyonu...");
+    otel.RezervasyonYap(oda1, "Çakışan Misafir", new DateTime(2026, 11, 16), new DateTime(2026, 11, 19), 2);
+}
+catch (OdaDoluException ex)
+{
+    Console.ForegroundColor = ConsoleColor.Yellow;
+    Console.WriteLine($"  [YAKALANAN İSTİSNA]: {ex.Message}");
+    Console.ResetColor();
+}
+Console.WriteLine();
+
+// --------------------------------------------------------------------------------
+// ADIM 5: OdaDoluException tetikleme senaryosu (program çökmeden devam eder).
+// --------------------------------------------------------------------------------
+Console.WriteLine(">>> [ADIM 5] OdaDoluException Tetikleme (Kapasite Aşımı) ve Güvenli Devam...");
+try
+{
+    Console.WriteLine($"  Deneniyor: Maksimum {oda1.MaksimumKapasite} kişilik Oda 101 için 5 kişilik rezervasyon...");
+    otel.RezervasyonYap(oda1, "Kalabalık Grup", new DateTime(2026, 12, 25), new DateTime(2026, 12, 28), 5);
+}
+catch (OdaDoluException ex)
+{
+    Console.ForegroundColor = ConsoleColor.Yellow;
+    Console.WriteLine($"  [YAKALANAN İSTİSNA]: {ex.Message}");
+    Console.ResetColor();
+}
+
+// Ek Doğrulama: İkinci zorunlu istisna (GecersizTarihException) kontrolü
+try
+{
+    Console.WriteLine("  Ek Kontrol (GecersizTarihException): Çıkış tarihi giriş tarihinden önce veriliyor...");
+    otel.RezervasyonYap(oda1, "Hatalı Tarih Misafiri", new DateTime(2026, 12, 28), new DateTime(2026, 12, 25), 1);
+}
+catch (GecersizTarihException ex)
+{
+    Console.ForegroundColor = ConsoleColor.Yellow;
+    Console.WriteLine($"  [YAKALANAN İSTİSNA]: {ex.Message}");
+    Console.ResetColor();
+}
+Console.WriteLine("  -> İstisnalar yakalandı, program çökmeden normal akışına devam ediyor.\n");
