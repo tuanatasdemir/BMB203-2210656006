@@ -106,3 +106,38 @@ catch (GecersizTarihException ex)
     Console.ResetColor();
 }
 Console.WriteLine("  -> İstisnalar yakalandı, program çökmeden normal akışına devam ediyor.\n");
+
+// --------------------------------------------------------------------------------
+// ADIM 6: Stratejiyi ArtanCeza olarak değiştirip SuitOda için 3 gece hesabını
+//         eski ve yeni strateji sonuçlarıyla yan yana yazdırın.
+// --------------------------------------------------------------------------------
+Console.WriteLine(">>> [ADIM 6] Strateji Değişimi (GunlukSabitCeza -> ArtanCeza) ve Yan Yana Karşılaştırma...");
+
+ICezaPolitikasi eskiPolitika = otel.AktifCezaPolitikasi; // GunlukSabitCeza
+ICezaPolitikasi yeniPolitika = new ArtanCeza();
+
+// Çalışma zamanında (runtime) strateji değişimi
+otel.CezaPolitikasiDegistir(yeniPolitika);
+
+int suitGece = 3;
+Para suitKonaklama = oda3.Hesapla(suitGece); // 50 * 3 * 1.75 = 262.50 TL
+
+// 3 birim gecikme durumu (Föyde istenen 3 gece üzerinden karşılaştırma)
+int gecikme3 = 3;
+Para eskiToplam3 = suitKonaklama + eskiPolitika.Ceza(gecikme3);
+Para yeniToplam3 = suitKonaklama + otel.AktifCezaPolitikasi.Ceza(gecikme3);
+
+// 8 birim gecikme durumu (ArtanCeza'nın 6 birim eşik kuralının farkını göstermek için)
+int gecikme8 = 8;
+Para eskiToplam8 = suitKonaklama + eskiPolitika.Ceza(gecikme8);
+Para yeniToplam8 = suitKonaklama + otel.AktifCezaPolitikasi.Ceza(gecikme8);
+
+Console.WriteLine($"  İncelenen Oda  : {oda3}");
+Console.WriteLine($"  Konaklama ({suitGece}G) : {suitKonaklama}");
+Console.WriteLine($"  Aktif Strateji : {otel.AktifCezaPolitikasi.PolitikaAdi}");
+Console.WriteLine("  --------------------------------------------------------------------------------------");
+Console.WriteLine($"  {"Senaryo",-24} | {"GunlukSabitCeza (Önce)",-28} | {"ArtanCeza (Sonra)",-28}");
+Console.WriteLine("  --------------------------------------------------------------------------------------");
+Console.WriteLine($"  {"3 Gece + 3 Birim Gecikme",-24} | {$"Ceza: {eskiPolitika.Ceza(gecikme3)} | Top: {eskiToplam3}",-28} | {$"Ceza: {yeniPolitika.Ceza(gecikme3)} | Top: {yeniToplam3}",-28}");
+Console.WriteLine($"  {"3 Gece + 8 Birim Gecikme",-24} | {$"Ceza: {eskiPolitika.Ceza(gecikme8)} | Top: {eskiToplam8}",-28} | {$"Ceza: {yeniPolitika.Ceza(gecikme8)} | Top: {yeniToplam8}",-28}");
+Console.WriteLine("  --------------------------------------------------------------------------------------\n");
