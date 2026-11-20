@@ -16,7 +16,7 @@ dotnet run --project src/OtelRezervasyon.csproj
 ```
 
 ## UML Sınıf Diyagramı
-![Otel Rezervasyon UML Sınıf Diyagramı](docs/uml_diyagrami.png)
+![Otel Rezervasyon UML Sınıf Diyagramı](docs/uml_diyagrami.jpg)
 
 ## Main Senaryosu Tam Konsol Çıktısı
 ```text
