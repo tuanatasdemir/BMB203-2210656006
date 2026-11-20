@@ -16,7 +16,7 @@ dotnet run --project src/OtelRezervasyon.csproj
 ```
 
 ## UML Sınıf Diyagramı
-![Otel Rezervasyon UML Sınıf Diyagramı](docs/uml_diyagrami)
+![Otel Rezervasyon UML Sınıf Diyagramı](docs/uml_diyagrami.png)
 
 ## Main Senaryosu Tam Konsol Çıktısı
 ```text
@@ -104,9 +104,9 @@ Toplam Eklenen Oda: 6 | Toplam Rezervasyon: 6
 ```
 
 ### Konsol Ekran Görüntüsü
-![Main Senaryosu Konsol Ekran Görüntüsü](docs/konsol_ciktisi_1)
-![Main Senaryosu Konsol Ekran Görüntüsü](docs/konsol_ciktisi_2)
-![Main Senaryosu Konsol Ekran Görüntüsü](docs/konsol_ciktisi_3)
+![Main Senaryosu Konsol Ekran Görüntüsü](docs/konsol_ciktisi_1.png)
+![Main Senaryosu Konsol Ekran Görüntüsü](docs/konsol_ciktisi_2.png)
+![Main Senaryosu Konsol Ekran Görüntüsü](docs/konsol_ciktisi_3.png)
 
 ## Tasarım Soruları
 
