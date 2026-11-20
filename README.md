@@ -124,8 +124,14 @@ Toplam Eklenen Oda: 6 | Toplam Rezervasyon: 6
 ### 3. Yeni bir alt tür eklemek için hangi dosyalara dokunmak gerekir?
 Sistem Açık/Kapalı Prensibi'ne (Open/Closed Principle) uygun kurgulandığı için yeni bir oda alt türü (örneğin `KralDairesi`) eklemek amacıyla mevcut çekirdek sınıflarda değişiklik yapmaya gerek yoktur:
 - Yalnızca `src/Models/KralDairesi.cs` adında yeni bir dosya oluşturulur; `Oda` sınıfından türetilir ve kendi alan doğrulaması ile `TurKatsayisi`, `MaksimumKapasite`, `Hesapla(int gece)` ve `ToString()` üyeleri override edilir.
-
-
-
-
 - `Otel` (`src/Services/Otel.cs`) ve `Rezervasyon` (`src/Models/Rezervasyon.cs`) sınıfları soyut `Oda` taban sınıfı üzerinden polimorfik çalıştığı için bu dosyalara dokunulmaz. Yeni sınıfı kullanmak için yalnızca çağrı noktasına (örneğin `src/Program.cs`) yeni nesne örneği eklenir. Benzer şekilde yeni bir ceza politikası eklemek için de yalnızca `src/Strategies/` altında `ICezaPolitikasi` arayüzünü uygulayan yeni bir sınıf dosyası eklenmesi yeterlidir.
+
+
+## Yapay Zekâ Kullanım Beyanı
+Bu ödevin geliştirilme sürecinde **Google Gemini** aracından aşağıdaki amaçlarla yararlanılmıştır:
+- Ödev föyüne uygun 8 günlük çalışma planının ve nesneye yönelik sınıf tasarımının (kapsülleme, kalıtım, strateji deseni ve DI) planlanması,
+- C# dilinde `readonly record struct` (`Para`), indexer ve `IReadOnlyList` kullanımı ile Git komutlarında hata ayıklama desteği,
+- UML sınıf diyagramı sözdiziminin (Mermaid) düzenlenmesi.
+
+Tüm kaynak kodlar yerel ortamda adım adım uygulanmış, derlenmiş ve çalıştırılarak test edilmiştir.
+
