@@ -141,3 +141,83 @@ Console.WriteLine("  -----------------------------------------------------------
 Console.WriteLine($"  {"3 Gece + 3 Birim Gecikme",-24} | {$"Ceza: {eskiPolitika.Ceza(gecikme3)} | Top: {eskiToplam3}",-28} | {$"Ceza: {yeniPolitika.Ceza(gecikme3)} | Top: {yeniToplam3}",-28}");
 Console.WriteLine($"  {"3 Gece + 8 Birim Gecikme",-24} | {$"Ceza: {eskiPolitika.Ceza(gecikme8)} | Top: {eskiToplam8}",-28} | {$"Ceza: {yeniPolitika.Ceza(gecikme8)} | Top: {yeniToplam8}",-28}");
 Console.WriteLine("  --------------------------------------------------------------------------------------\n");
+
+
+// --------------------------------------------------------------------------------
+// ADIM 7: CikisYap() ile iki kaydı kapatın; ardından tüm kayıtları ve toplam
+//         KonaklamaUcreti değerini listeleyin.
+// --------------------------------------------------------------------------------
+Console.WriteLine(">>> [ADIM 7] CikisYap() İle İki Kaydı Kapatma ve Toplam Konaklama Ücreti Raporu...");
+
+Para tahsilat1 = otel.CikisYap(rez1.Id, gecikmeBirimi: 0); // Zamanında çıkış (0 gecikme)
+Para tahsilat2 = otel.CikisYap(rez3.Id, gecikmeBirimi: 2); // 2 birim gecikmeli çıkış (ArtanCeza: +80 TL)
+
+Console.WriteLine($"  - Kapatılan Kayıt 1: #{rez1.Id.ToString()[..8]} ({rez1.MusteriAdi}) | Tahsil Edilen (Konaklama + Ceza): {tahsilat1}");
+Console.WriteLine($"  - Kapatılan Kayıt 2: #{rez3.Id.ToString()[..8]} ({rez3.MusteriAdi}) | Tahsil Edilen (Konaklama + Ceza): {tahsilat2}");
+
+Console.WriteLine("\n  --- TÜM REZERVASYON KAYITLARI ---");
+foreach (var rez in otel.Rezervasyonlar)
+{
+    Console.WriteLine($"  * {rez} | Konaklama Ücreti: {rez.KonaklamaUcretiHesapla()}");
+}
+
+Para toplamKonaklama = otel.ToplamKonaklamaUcretiHesapla();
+Console.WriteLine("  --------------------------------------------------------------------------------------");
+Console.WriteLine($"  TOPLAM KONAKLAMA ÜCRETİ (6 Kayıt): {toplamKonaklama}");
+Console.WriteLine("  --------------------------------------------------------------------------------------\n");
+
+// --------------------------------------------------------------------------------
+// ADIM 8: Ek görevlerin her birini doğrulayan adımlar.
+//         Ek Görev 1: Değer Nesnesi (Para - record, operator +, Equals/GetHashCode)
+//         Ek Görev 2: Erişim ve Doğrulama Katmanı (Indexer, IReadOnlyList görünümü)
+// --------------------------------------------------------------------------------
+Console.WriteLine(">>> [ADIM 8] Ek Görevlerin Doğrulanması...");
+
+// --- Ek Görev 1: Para Değer Nesnesi ---
+Console.WriteLine("\n  [Ek Görev 1: Değer Nesnesi (Para)]");
+Para tutarA = new(150.50m, "TL");
+Para tutarB = new(249.50m, "TL");
+Para tutarAKopya = new(150.50m, "TL");
+
+Console.WriteLine($"  - operator + Testi        : {tutarA} + {tutarB} = {tutarA + tutarB}");
+Console.WriteLine($"  - Equals Testi            : tutarA.Equals(tutarAKopya) => {tutarA.Equals(tutarAKopya)}");
+Console.WriteLine($"  - GetHashCode Testi       : {tutarA.GetHashCode()} == {tutarAKopya.GetHashCode()} ({tutarA.GetHashCode() == tutarAKopya.GetHashCode()})");
+
+try
+{
+    Console.WriteLine("  - Farklı Birim Testi      : 150,50 TL + 50,00 USD toplanmaya çalışılıyor...");
+    Para dolarTutar = new(50m, "USD");
+    Para hataliToplam = tutarA + dolarTutar;
+}
+catch (InvalidOperationException ex)
+{
+    Console.ForegroundColor = ConsoleColor.Yellow;
+    Console.WriteLine($"    [YAKALANAN İSTİSNA]     : {ex.Message}");
+    Console.ResetColor();
+}
+
+// --- Ek Görev 2: Erişim ve Doğrulama Katmanı ---
+Console.WriteLine("\n  [Ek Görev 2: Erişim ve Doğrulama Katmanı (Indexer & IReadOnlyList)]");
+Console.WriteLine($"  - Indexer Erişimi otel[0] : {otel[0]}");
+Console.WriteLine($"  - Indexer Erişimi otel[2] : {otel[2]}");
+
+try
+{
+    Console.WriteLine("  - Geçersiz İndeks Testi   : otel[99] erişimi deneniyor...");
+    Oda gecersizOda = otel[99];
+}
+catch (IndexOutOfRangeException ex)
+{
+    Console.ForegroundColor = ConsoleColor.Yellow;
+    Console.WriteLine($"    [YAKALANAN İSTİSNA]     : {ex.Message}");
+    Console.ResetColor();
+}
+
+// Salt-okunur görünüm (ReadOnlyCollection) kontrolü
+IReadOnlyList<Oda> saltOkunurOdalar = otel.Odalar;
+Console.WriteLine($"  - Salt-Okunur Görünüm Tipi: {saltOkunurOdalar.GetType().Name} (Eleman Sayısı: {saltOkunurOdalar.Count})");
+Console.WriteLine("  - Doğrudan Ekleme/Silme   : IReadOnlyList arayüzü sayesinde derleme zamanında engellenmiştir.");
+
+Console.WriteLine("\n================================================================================");
+Console.WriteLine("  SİMÜLASYON BAŞARIYLA TAMAMLANDI");
+Console.WriteLine("================================================================================");
